@@ -1,0 +1,1967 @@
+<!DOCTYPE html>
+<html lang="th" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Smart IoT Control Center</title>
+
+    <!-- Mobile Web App & Share Icon Configuration -->
+    <meta name="theme-color" content="#0b0f17">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Smart IoT">
+    <meta property="og:title" content="Smart IoT Control Center">
+    <meta property="og:description" content="ระบบควบคุมไฟ 4 ดวง พัดลม 3 ตัว และติดตามอุณหภูมิความชื้นผ่าน EMQX Cloud">
+    <meta property="og:type" content="website">
+
+    <!-- Custom IoT App Icon (SVG Data URI for Browser, iOS & Android Home Screen) -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cdefs%3E%3ClinearGradient id='bg' x1='0%25' y1='100%25' x2='100%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='%23007a7a'/%3E%3Cstop offset='100%25' stop-color='%2306b6d4'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='512' height='512' rx='112' fill='url(%23bg)'/%3E%3Cpath d='M256 96L104 224h44v168c0 13.3 10.7 24 24 24h168c13.3 0 24-10.7 24-24V224h44L256 96z' fill='none' stroke='%23ffffff' stroke-width='26' stroke-linejoin='round'/%3E%3Cpath d='M274 192l-68 92h54l-16 76 68-92h-54l16-76z' fill='%23facc15'/%3E%3C/svg%3E">
+    <link id="appleTouchIcon" rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cdefs%3E%3ClinearGradient id='bg' x1='0%25' y1='100%25' x2='100%25' y2='0%25'%3E%3Cstop offset='0%25' stop-color='%23007a7a'/%3E%3Cstop offset='100%25' stop-color='%2306b6d4'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='512' height='512' rx='112' fill='url(%23bg)'/%3E%3Cpath d='M256 96L104 224h44v168c0 13.3 10.7 24 24 24h168c13.3 0 24-10.7 24-24V224h44L256 96z' fill='none' stroke='%23ffffff' stroke-width='26' stroke-linejoin='round'/%3E%3Cpath d='M274 192l-68 92h54l-16 76 68-92h-54l16-76z' fill='%23facc15'/%3E%3C/svg%3E">
+    <link id="pwaManifest" rel="manifest" href="">
+    <script>
+        // Generate PNG Icon via Canvas for iOS Apple-Touch-Icon & Android Manifest Compatibility
+        (function() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+                const grad = ctx.createLinearGradient(0, 512, 512, 0);
+                grad.addColorStop(0, '#007a7a');
+                grad.addColorStop(1, '#06b6d4');
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.roundRect(0, 0, 512, 512, 112);
+                ctx.fill();
+
+                // House Outline
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 26;
+                ctx.lineJoin = 'round';
+                ctx.beginPath();
+                ctx.moveTo(256, 96);
+                ctx.lineTo(104, 224);
+                ctx.lineTo(148, 224);
+                ctx.lineTo(148, 392);
+                ctx.quadraticCurveTo(148, 416, 172, 416);
+                ctx.lineTo(340, 416);
+                ctx.quadraticCurveTo(364, 416, 364, 392);
+                ctx.lineTo(364, 224);
+                ctx.lineTo(408, 224);
+                ctx.closePath();
+                ctx.stroke();
+
+                // Lightning Bolt
+                ctx.fillStyle = '#facc15';
+                ctx.beginPath();
+                ctx.moveTo(274, 192);
+                ctx.lineTo(206, 284);
+                ctx.lineTo(260, 284);
+                ctx.lineTo(244, 360);
+                ctx.lineTo(312, 268);
+                ctx.lineTo(258, 268);
+                ctx.closePath();
+                ctx.fill();
+
+                const pngUrl = canvas.toDataURL('image/png');
+                const appleIcon = document.getElementById('appleTouchIcon');
+                if (appleIcon) appleIcon.href = pngUrl;
+
+                const manifest = {
+                    name: 'Smart IoT Control Center',
+                    short_name: 'Smart IoT',
+                    start_url: '.',
+                    display: 'standalone',
+                    background_color: '#0b0f17',
+                    theme_color: '#0b0f17',
+                    icons: [{ src: pngUrl, sizes: '512x512', type: 'image/png', purpose: 'any maskable' }]
+                };
+                const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+                const manifestEl = document.getElementById('pwaManifest');
+                if (manifestEl) manifestEl.href = URL.createObjectURL(manifestBlob);
+            }
+        })();
+    </script>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        emqx: {
+                            50: '#eefbfb',
+                            100: '#d5f5f5',
+                            500: '#00b8b8',
+                            600: '#009999',
+                            700: '#007a7a',
+                            900: '#004242'
+                        },
+                        darkbg: '#0b0f17',
+                        cardbg: '#141c2b',
+                        cardborder: '#1f2d42'
+                    },
+                    fontFamily: {
+                        sans: ['Prompt', 'Sarabun', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- MQTT.js CDN -->
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    
+    <style>
+        html, body {
+            font-family: 'Prompt', sans-serif;
+            background-color: #0b0f17;
+            color: #e2e8f0;
+            overflow-x: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .fan-spin {
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .glow-yellow {
+            box-shadow: 0 0 25px rgba(234, 179, 8, 0.4);
+        }
+        .glow-cyan {
+            box-shadow: 0 0 25px rgba(6, 182, 212, 0.4);
+        }
+        .glow-emerald {
+            box-shadow: 0 0 25px rgba(16, 185, 129, 0.4);
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b0f17;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1f2d42;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #00b8b8;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed top-5 right-5 left-5 sm:left-auto z-50 flex flex-col gap-3 pointer-events-none"></div>
+
+    <!-- Top Navigation Header -->
+    <header class="bg-cardbg border-b border-cardborder sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-wrap items-center justify-between py-2.5 sm:py-0 sm:h-16 gap-2">
+                <!-- Brand Title -->
+                <div class="flex items-center gap-2.5 sm:gap-3">
+                    <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-emqx-700 to-cyan-500 flex items-center justify-center text-white shadow-lg shrink-0">
+                        <i class="fa-solid fa-bolt text-lg sm:text-xl"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-base sm:text-lg font-bold text-white leading-tight flex flex-wrap items-center gap-1.5 sm:gap-2">
+                            Smart IoT Control Center
+                            <span class="text-[10px] sm:text-xs font-mono font-normal px-2 py-0.5 rounded bg-emqx-900/60 text-emqx-500 border border-emqx-700/50">EMQX Cloud Edition</span>
+                        </h1>
+                        <p class="hidden sm:block text-xs text-slate-400">ควบคุมไฟ 4 ดวง | พัดลม 3 ตัว | อุณหภูมิ & ความชื้น (TLS/WSS)</p>
+                    </div>
+                </div>
+
+                <!-- Status Badge & Top Actions -->
+                <div class="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-between sm:justify-end">
+                    <!-- Connection Status Badge -->
+                    <div id="connectionBadge" class="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-full bg-slate-800 border border-slate-700 text-[11px] sm:text-xs font-medium">
+                        <span id="statusDot" class="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse shrink-0"></span>
+                        <span id="statusText" class="text-amber-400 truncate">จำลองการทำงาน (Simulation)</span>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <!-- Mute Toggle -->
+                        <button id="btnSoundToggle" onclick="toggleSound()" class="p-2 rounded-lg bg-slate-800 text-slate-300 hover:text-white border border-slate-700 hover:border-slate-600 transition" title="เปิด/ปิด เสียงเอฟเฟกต์">
+                            <i id="soundIcon" class="fa-solid fa-volume-high"></i>
+                        </button>
+
+                        <!-- Quick EMQX Setup Modal Button -->
+                        <button onclick="toggleConfigModal(true)" class="flex items-center gap-1.5 sm:gap-2 px-3 py-1.5 rounded-lg bg-emqx-600 hover:bg-emqx-500 text-white text-xs font-medium transition shadow-md whitespace-nowrap">
+                            <i class="fa-solid fa-plug"></i>
+                            <span>ตั้งค่า EMQX</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs Bar -->
+        <div class="bg-slate-900/80 border-t border-cardborder px-4 sm:px-6 lg:px-8">
+            <div class="max-w-7xl mx-auto flex space-x-2 overflow-x-auto py-2">
+                <button onclick="switchTab('dashboard')" id="tab-dashboard" class="tab-btn whitespace-nowrap px-4 py-2 rounded-lg text-sm font-medium text-white bg-emqx-600 flex items-center gap-2 transition">
+                    <i class="fa-solid fa-gauge-high"></i> แผงควบคุม (Dashboard)
+                </button>
+                <button onclick="switchTab('automation')" id="tab-automation" class="tab-btn whitespace-nowrap px-4 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 flex items-center gap-2 transition">
+                    <i class="fa-solid fa-robot"></i> ระบบอัตโนมัติ (Automation)
+                </button>
+                <button onclick="switchTab('logs')" id="tab-logs" class="tab-btn whitespace-nowrap px-4 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 flex items-center gap-2 transition">
+                    <i class="fa-solid fa-list-check"></i> ประวัติกิจกรรม (Logs)
+                </button>
+                <button onclick="switchTab('code')" id="tab-code" class="tab-btn whitespace-nowrap px-4 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 flex items-center gap-2 transition">
+                    <i class="fa-solid fa-code"></i> โค้ด & ผังสาย (Hardware Generator)
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- ================= TAB 1: DASHBOARD ================= -->
+        <div id="view-dashboard" class="space-y-6">
+            
+            <!-- EMQX Quick Settings & Simulation Bar -->
+            <div class="bg-cardbg border border-cardborder rounded-2xl p-4 shadow-xl flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="flex items-center gap-3 w-full md:w-auto">
+                    <div class="p-3 rounded-xl bg-slate-800 text-emqx-500 border border-slate-700 shrink-0">
+                        <i class="fa-solid fa-cloud-arrow-up text-xl"></i>
+                    </div>
+                    <div class="min-w-0">
+                        <h2 class="text-sm font-bold text-white flex items-center gap-2">
+                            โหมดการทำงาน: <span id="currentModeLabel" class="text-emqx-500">Live EMQX Cloud</span>
+                        </h2>
+                        <p id="brokerInfoText" class="text-xs text-slate-400 font-mono break-all">Broker: wss://xxxx.ala.asia-southeast1.emqxsl.com:8084/mqtt</p>
+                    </div>
+                </div>
+
+                <!-- Simulation Sliders (visible only in Sim Mode) -->
+                <div id="simSlidersContainer" class="flex flex-wrap items-center gap-4 w-full md:w-auto bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
+                    <span class="text-xs font-semibold text-amber-400 flex items-center gap-1">
+                        <i class="fa-solid fa-sliders"></i> จำลองเซนเซอร์:
+                    </span>
+                    <div class="flex items-center gap-2 text-xs">
+                        <span class="text-slate-400">Temp:</span>
+                        <input type="range" id="simTempSlider" min="15" max="45" step="0.5" value="28.5" oninput="onSimSensorChange()" class="w-24 accent-amber-500">
+                        <span id="simTempVal" class="font-mono text-amber-400 font-bold w-12">28.5°C</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs">
+                        <span class="text-slate-400">Hum:</span>
+                        <input type="range" id="simHumSlider" min="20" max="95" step="1" value="65" oninput="onSimSensorChange()" class="w-24 accent-cyan-500">
+                        <span id="simHumVal" class="font-mono text-cyan-400 font-bold w-10">65%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sensor Cards & Chart Section -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <!-- Temp Card -->
+                <div class="bg-cardbg border border-cardborder rounded-2xl p-5 shadow-xl relative overflow-hidden group">
+                    <div class="absolute -right-4 -bottom-4 text-amber-500/10 text-8xl group-hover:scale-110 transition">
+                        <i class="fa-solid fa-temperature-high"></i>
+                    </div>
+                    <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">อุณหภูมิห้อง (DHT22)</p>
+                    <div class="mt-2 flex items-baseline gap-2">
+                        <span id="cardTemp" class="text-4xl font-bold font-mono text-amber-400">--</span>
+                        <span class="text-lg text-slate-400 font-semibold">°C</span>
+                    </div>
+                    <div class="mt-3 flex items-center text-xs text-amber-500/80 gap-1 font-mono" id="tempStatus">
+                        <i class="fa-solid fa-circle text-[8px] animate-ping"></i> อัปเดตล่าสุด: <span id="tempTime">--:--:--</span>
+                    </div>
+                </div>
+
+                <!-- Hum Card -->
+                <div class="bg-cardbg border border-cardborder rounded-2xl p-5 shadow-xl relative overflow-hidden group">
+                    <div class="absolute -right-4 -bottom-4 text-cyan-500/10 text-8xl group-hover:scale-110 transition">
+                        <i class="fa-solid fa-droplet"></i>
+                    </div>
+                    <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">ความชื้นสัมพัทธ์</p>
+                    <div class="mt-2 flex items-baseline gap-2">
+                        <span id="cardHum" class="text-4xl font-bold font-mono text-cyan-400">--</span>
+                        <span class="text-lg text-slate-400 font-semibold">%</span>
+                    </div>
+                    <div class="mt-3 flex items-center text-xs text-cyan-500/80 gap-1 font-mono">
+                        <i class="fa-solid fa-water"></i> สภาพอากาศอยู่ในเกณฑ์ปกติ
+                    </div>
+                </div>
+
+                <!-- Lights Active Count -->
+                <div class="bg-cardbg border border-cardborder rounded-2xl p-5 shadow-xl relative overflow-hidden group">
+                    <div class="absolute -right-4 -bottom-4 text-yellow-500/10 text-8xl group-hover:scale-110 transition">
+                        <i class="fa-solid fa-lightbulb"></i>
+                    </div>
+                    <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">หลอดไฟที่เปิดอยู่</p>
+                    <div class="mt-2 flex items-baseline gap-2">
+                        <span id="cardLightsCount" class="text-4xl font-bold font-mono text-yellow-400">0</span>
+                        <span class="text-lg text-slate-400 font-semibold">/ 4 ดวง</span>
+                    </div>
+                    <div class="mt-3 flex items-center text-xs text-slate-400">
+                        <span id="cardLightsSubtext">ปิดการทำงานทั้งหมด</span>
+                    </div>
+                </div>
+
+                <!-- Fans Active Count -->
+                <div class="bg-cardbg border border-cardborder rounded-2xl p-5 shadow-xl relative overflow-hidden group">
+                    <div class="absolute -right-4 -bottom-4 text-emerald-500/10 text-8xl group-hover:scale-110 transition">
+                        <i class="fa-solid fa-fan"></i>
+                    </div>
+                    <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">พัดลมที่เปิดอยู่</p>
+                    <div class="mt-2 flex items-baseline gap-2">
+                        <span id="cardFansCount" class="text-4xl font-bold font-mono text-emerald-400">0</span>
+                        <span class="text-lg text-slate-400 font-semibold">/ 3 ตัว</span>
+                    </div>
+                    <div class="mt-3 flex items-center text-xs text-emerald-500/80 gap-1">
+                        <i class="fa-solid fa-shield-halved"></i> ควบคุมอัตโนมัติ: <span id="autoFanStatusBadge" class="font-bold text-white">เปิด</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Dual-Axis Chart -->
+            <div class="bg-cardbg border border-cardborder rounded-2xl p-5 shadow-xl">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-chart-line text-emqx-500"></i> กราฟติดตามอุณหภูมิและความชื้นแบบเรียลไทม์
+                    </h3>
+                    <span class="text-xs text-slate-400 font-mono">อัปเดตทุก 3 วินาที</span>
+                </div>
+                <div class="h-64 w-full">
+                    <canvas id="sensorChart"></canvas>
+                </div>
+            </div>
+
+            <!-- LIGHTING CONTROL SECTION (Channel 0..3) -->
+            <div class="space-y-3">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <h3 class="text-base font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-lightbulb text-yellow-400"></i> สั่งงานหลอดไฟ 4 ดวง (Channels 0–3)
+                    </h3>
+                    <div class="flex gap-2">
+                        <button onclick="setAllGroup('lights', true)" class="px-3 py-1.5 rounded-lg bg-yellow-500/20 text-yellow-300 hover:bg-yellow-500/30 border border-yellow-500/40 text-xs font-medium transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-power-off"></i> เปิดไฟทั้งหมด
+                        </button>
+                        <button onclick="setAllGroup('lights', false)" class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700 text-xs font-medium transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-xmark"></i> ปิดไฟทั้งหมด
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Light Cards 0..3 -->
+                    <template id="lightCardTemplate">
+                        <div class="light-card bg-cardbg border border-cardborder rounded-2xl p-4 shadow-xl transition-all duration-300 hover:border-slate-600 relative overflow-hidden">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="icon-box w-12 h-12 rounded-xl bg-slate-800 text-slate-500 flex items-center justify-center text-2xl transition-all duration-300">
+                                    <i class="fa-solid fa-lightbulb"></i>
+                                </div>
+                                <span class="gpio-badge text-[11px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">GPIO --</span>
+                            </div>
+                            <h4 class="device-name text-sm font-bold text-white">หลอดไฟดวงที่ X</h4>
+                            <p class="channel-desc text-xs text-slate-400 font-mono">Channel N</p>
+                            
+                            <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between">
+                                <span class="status-label text-xs font-semibold text-slate-500">สถานะ: ปิด</span>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" class="device-toggle sr-only peer" onchange="toggleDeviceFromUI(this)">
+                                    <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-yellow-500"></div>
+                                </label>
+                            </div>
+                        </div>
+                    </template>
+                    <div id="lightsGrid" class="contents"></div>
+                </div>
+            </div>
+
+            <!-- FAN CONTROL SECTION (Channel 4..6) -->
+            <div class="space-y-3 pt-2">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <h3 class="text-base font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-fan text-emerald-400"></i> สั่งงานพัดลม 3 ตัว (Channels 4–6)
+                    </h3>
+                    <div class="flex gap-2">
+                        <button onclick="setAllGroup('fans', true)" class="px-3 py-1.5 rounded-lg bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border border-emerald-500/40 text-xs font-medium transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-power-off"></i> เปิดพัดลมทั้งหมด
+                        </button>
+                        <button onclick="setAllGroup('fans', false)" class="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 border border-slate-700 text-xs font-medium transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-xmark"></i> ปิดพัดลมทั้งหมด
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <!-- Fan Cards 4..6 -->
+                    <template id="fanCardTemplate">
+                        <div class="fan-card bg-cardbg border border-cardborder rounded-2xl p-4 shadow-xl transition-all duration-300 hover:border-slate-600 relative overflow-hidden">
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="icon-box w-12 h-12 rounded-xl bg-slate-800 text-slate-500 flex items-center justify-center text-2xl transition-all duration-300">
+                                    <i class="fa-solid fa-fan"></i>
+                                </div>
+                                <div class="flex flex-col items-end gap-1">
+                                    <span class="gpio-badge text-[11px] font-mono px-2 py-0.5 rounded bg-slate-800 text-slate-400 border border-slate-700">GPIO --</span>
+                                    <span class="auto-tag hidden text-[10px] px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800">Auto Temp</span>
+                                </div>
+                            </div>
+                            <h4 class="device-name text-sm font-bold text-white">พัดลมตัวที่ X</h4>
+                            <p class="channel-desc text-xs text-slate-400 font-mono">Channel N</p>
+                            
+                            <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between">
+                                <span class="status-label text-xs font-semibold text-slate-500">สถานะ: ปิด</span>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" class="device-toggle sr-only peer" onchange="toggleDeviceFromUI(this)">
+                                    <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
+                                </label>
+                            </div>
+                        </div>
+                    </template>
+                    <div id="fansGrid" class="contents"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= TAB 2: AUTOMATION ================= -->
+        <div id="view-automation" class="hidden space-y-6">
+            
+            <!-- Auto Fan Logic Card -->
+            <div class="bg-cardbg border border-cardborder rounded-2xl p-6 shadow-xl">
+                <div class="flex items-center justify-between gap-3 mb-6 pb-4 border-b border-cardborder">
+                    <div class="flex items-center gap-3">
+                        <div class="p-3 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">
+                            <i class="fa-solid fa-temperature-arrow-up text-2xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-bold text-white">ระบบควบคุมพัดลมอัตโนมัติตามอุณหภูมิ (Auto Fan Control)</h3>
+                            <p class="text-xs text-slate-400">สั่งเปิดพัดลมทันทีเมื่ออุณหภูมิห้องสูงเกินเกณฑ์ที่ตั้งไว้ และปิดเมื่อเย็นลง</p>
+                        </div>
+                    </div>
+                    <!-- Master Toggle for Auto Fan -->
+                    <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                        <input type="checkbox" id="autoFanMasterToggle" checked onchange="toggleAutoFanMaster(this.checked)" class="sr-only peer">
+                        <div class="w-14 h-7 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-emerald-500"></div>
+                    </label>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Threshold Setting -->
+                    <div class="space-y-4 bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                        <div class="flex justify-between items-center">
+                            <label class="text-sm font-semibold text-slate-300">อุณหภูมิเป้าหมายที่ให้เริ่มทำงาน (Threshold):</label>
+                            <span id="autoTempThresholdDisplay" class="text-xl font-bold font-mono text-emerald-400">30.0°C</span>
+                        </div>
+                        <input type="range" id="autoTempSlider" min="20" max="40" step="0.5" value="30.0" oninput="updateAutoTempThreshold(this.value)" class="w-full accent-emerald-500">
+                        <div class="flex justify-between text-[11px] text-slate-500 font-mono">
+                            <span>20°C</span>
+                            <span>25°C</span>
+                            <span>30°C</span>
+                            <span>35°C</span>
+                            <span>40°C</span>
+                        </div>
+                        <p class="text-xs text-slate-400 bg-slate-800/80 p-2.5 rounded-lg border border-slate-700/60">
+                            <i class="fa-solid fa-circle-info text-emqx-500 mr-1"></i>
+                            <strong>Hysteresis System:</strong> พัดลมจะเปิดเมื่ออุณหภูมิ ≥ <span id="autoTriggerTempText">30.0</span>°C และจะดับลงเมื่ออุณหภูมิลดลงต่ำกว่า <span id="autoOffTempText">29.0</span>°C (ต่ำกว่าเกณฑ์ 1.0°C) เพื่อป้องกันพัดลมติด-ดับถี่เกินไป
+                        </p>
+                    </div>
+
+                    <!-- Target Fans Selection -->
+                    <div class="space-y-4 bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                        <label class="text-sm font-semibold text-slate-300 block">เลือกพัดลมที่จะให้ทำงานอัตโนมัติ:</label>
+                        <div class="space-y-2">
+                            <label class="flex items-center gap-3 p-2.5 rounded-lg bg-slate-800 hover:bg-slate-700/80 cursor-pointer border border-slate-700 transition">
+                                <input type="checkbox" class="auto-fan-check accent-emerald-500 w-4 h-4" value="4" checked onchange="saveAutoFanTargets()">
+                                <span class="text-xs text-white font-medium">พัดลมตัวที่ 1 (Channel 4)</span>
+                            </label>
+                            <label class="flex items-center gap-3 p-2.5 rounded-lg bg-slate-800 hover:bg-slate-700/80 cursor-pointer border border-slate-700 transition">
+                                <input type="checkbox" class="auto-fan-check accent-emerald-500 w-4 h-4" value="5" checked onchange="saveAutoFanTargets()">
+                                <span class="text-xs text-white font-medium">พัดลมตัวที่ 2 (Channel 5)</span>
+                            </label>
+                            <label class="flex items-center gap-3 p-2.5 rounded-lg bg-slate-800 hover:bg-slate-700/80 cursor-pointer border border-slate-700 transition">
+                                <input type="checkbox" class="auto-fan-check accent-emerald-500 w-4 h-4" value="6" onchange="saveAutoFanTargets()">
+                                <span class="text-xs text-white font-medium">พัดลมตัวที่ 3 (Channel 6)</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Schedule Timers Section -->
+            <div class="bg-cardbg border border-cardborder rounded-2xl p-6 shadow-xl space-y-6">
+                <div class="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-cardborder">
+                    <div class="flex items-center gap-3">
+                        <div class="p-3 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20 shrink-0">
+                            <i class="fa-regular fa-clock text-2xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-base font-bold text-white">การตั้งเวลาทำงานล่วงหน้า (Schedule Timer Rules)</h3>
+                            <p class="text-xs text-slate-400">สั่งเปิด-ปิดอุปกรณ์ใดๆ ตามนาฬิกาเวลาจริง</p>
+                        </div>
+                    </div>
+
+                    <!-- Sim Speed Control (visible in sim mode) -->
+                    <div id="simSpeedBox" class="flex items-center gap-2 bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-800">
+                        <span class="text-xs text-slate-400 font-medium">ความเร็วเวลาจำลอง:</span>
+                        <button onclick="setSimClockSpeed(1)" class="sim-speed-btn px-2 py-0.5 rounded text-xs bg-emqx-600 text-white">1x</button>
+                        <button onclick="setSimClockSpeed(10)" class="sim-speed-btn px-2 py-0.5 rounded text-xs bg-slate-800 text-slate-400">10x</button>
+                        <button onclick="setSimClockSpeed(60)" class="sim-speed-btn px-2 py-0.5 rounded text-xs bg-slate-800 text-slate-400">60x</button>
+                    </div>
+                </div>
+
+                <!-- Add New Rule Form -->
+                <form onsubmit="addScheduleRule(event)" class="grid grid-cols-1 sm:grid-cols-4 gap-4 bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">เลือกอุปกรณ์:</label>
+                        <select id="timerDeviceSelect" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emqx-500">
+                            <option value="0">หลอดไฟดวงที่ 1 (Ch 0)</option>
+                            <option value="1">หลอดไฟดวงที่ 2 (Ch 1)</option>
+                            <option value="2">หลอดไฟดวงที่ 3 (Ch 2)</option>
+                            <option value="3">หลอดไฟดวงที่ 4 (Ch 3)</option>
+                            <option value="4">พัดลมตัวที่ 1 (Ch 4)</option>
+                            <option value="5">พัดลมตัวที่ 2 (Ch 5)</option>
+                            <option value="6">พัดลมตัวที่ 3 (Ch 6)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">คำสั่งทำงาน:</label>
+                        <select id="timerActionSelect" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-emqx-500">
+                            <option value="true">เปิดการทำงาน (ON)</option>
+                            <option value="false">ปิดการทำงาน (OFF)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs text-slate-400 mb-1">เวลา (HH:MM):</label>
+                        <input type="time" id="timerTimeInput" required class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-emqx-500">
+                    </div>
+                    <div class="flex items-end">
+                        <button type="submit" class="w-full py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-xs font-medium transition flex items-center justify-center gap-1.5 shadow-md">
+                            <i class="fa-solid fa-plus"></i> เพิ่มกฎตั้งเวลา
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Active Schedule Table -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-900 text-slate-400 uppercase font-mono">
+                            <tr>
+                                <th class="p-3 rounded-l-lg">เวลา</th>
+                                <th class="p-3">อุปกรณ์</th>
+                                <th class="p-3">คำสั่ง</th>
+                                <th class="p-3">สถานะกฎ</th>
+                                <th class="p-3 text-right rounded-r-lg">จัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="scheduleRulesTable" class="divide-y divide-slate-800 text-slate-300">
+                            <!-- Dynamic Rules -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= TAB 3: ACTIVITY LOGS ================= -->
+        <div id="view-logs" class="hidden space-y-6">
+            <div class="bg-cardbg border border-cardborder rounded-2xl p-6 shadow-xl space-y-4">
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-cardborder">
+                    <div>
+                        <h3 class="text-base font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-clock-rotate-left text-emqx-500"></i> ประวัติบันทึกกิจกรรม (Activity Logs)
+                        </h3>
+                        <p class="text-xs text-slate-400">บันทึกทุกคำสั่งสั่งงานย้อนหลัง พร้อมแหล่งที่มา (Manual Web, EMQX Sync, Auto Temp, Timer)</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="exportLogsCSV()" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium transition flex items-center gap-1.5 shadow">
+                            <i class="fa-solid fa-file-csv"></i> ส่งออกไฟล์ CSV
+                        </button>
+                        <button onclick="clearLogs()" class="px-3 py-1.5 rounded-lg bg-slate-800 text-rose-400 hover:bg-rose-950 border border-slate-700 text-xs font-medium transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-trash-can"></i> ล้างบันทึก
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Filter & Search Bar -->
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <div class="flex-grow relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-500 text-xs"></i>
+                        <input type="text" id="logSearchInput" onkeyup="renderLogsTable()" placeholder="ค้นหาชื่ออุปกรณ์, Channel หรือ Trigger Source..." class="w-full bg-slate-900 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-white focus:outline-none focus:border-emqx-500">
+                    </div>
+                    <select id="logSourceFilter" onchange="renderLogsTable()" class="bg-slate-900 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emqx-500">
+                        <option value="ALL">ทุกแหล่งที่มา (All Sources)</option>
+                        <option value="Web Manual">Web Manual</option>
+                        <option value="EMQX Sync">EMQX Sync</option>
+                        <option value="Auto Temp">Auto Temp</option>
+                        <option value="Schedule Timer">Schedule Timer</option>
+                    </select>
+                </div>
+
+                <!-- Log Table -->
+                <div class="overflow-x-auto max-h-[500px]">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-900 text-slate-400 uppercase font-mono sticky top-0">
+                            <tr>
+                                <th class="p-3">เวลา timestamp</th>
+                                <th class="p-3">อุปกรณ์</th>
+                                <th class="p-3">Channel</th>
+                                <th class="p-3">การทำงาน</th>
+                                <th class="p-3">แหล่งที่มา (Trigger)</th>
+                                <th class="p-3 font-mono">Payload Preview</th>
+                            </tr>
+                        </thead>
+                        <tbody id="activityLogTable" class="divide-y divide-slate-800 text-slate-300 font-mono">
+                            <!-- Log Entries injected here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= TAB 4: CODE & HARDWARE GENERATOR ================= -->
+        <div id="view-code" class="hidden space-y-6">
+            <div class="bg-cardbg border border-cardborder rounded-2xl p-6 shadow-xl space-y-6">
+                
+                <!-- Board Selector Header -->
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-cardborder">
+                    <div>
+                        <h3 class="text-base font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-microchip text-emqx-500"></i> เครื่องมือสร้างโค้ด Arduino C++ & ผังต่อสายไฟ
+                        </h3>
+                        <p class="text-xs text-slate-400">โค้ดจะดึงค่าจาก EMQX Credentials ของคุณไปใส่ในโค้ด C++ อัตโนมัติ พร้อมต่อผ่าน TLS พอร์ต 8883</p>
+                    </div>
+
+                    <!-- Board Selector Switcher -->
+                    <div class="flex items-center p-1 bg-slate-900 rounded-xl border border-slate-800">
+                        <button onclick="setBoardProfile('ESP32')" id="btnBoardESP32" class="px-4 py-1.5 rounded-lg text-xs font-bold transition bg-emqx-600 text-white shadow">
+                            ESP32 (30/38 Pin)
+                        </button>
+                        <button onclick="setBoardProfile('ESP32S3')" id="btnBoardESP32S3" class="px-4 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white">
+                            ESP32-S3
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Pin Wiring Table -->
+                <div class="space-y-3">
+                    <h4 class="text-sm font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-diagram-project text-amber-400"></i> ตารางการต่อสายขา GPIO ของบอร์ด <span id="boardTitleLabel" class="text-emqx-400 font-mono">ESP32</span>
+                    </h4>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-900 text-slate-400 uppercase font-mono">
+                                <tr>
+                                    <th class="p-3">อุปกรณ์ / โหลด</th>
+                                    <th class="p-3">โมดูล / Pin</th>
+                                    <th class="p-3">ต่อเข้าขาบอร์ด</th>
+                                    <th class="p-3">รายละเอียดการทำงาน</th>
+                                </tr>
+                            </thead>
+                            <tbody id="wiringPinoutTable" class="divide-y divide-slate-800 text-slate-300">
+                                <!-- Dynamic Wiring Table -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Code Editor / Preview Box -->
+                <div class="space-y-3">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                        <h4 class="text-sm font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-file-code text-cyan-400"></i> โค้ด Arduino C++ (ใช้ WiFiClientSecure พอร์ต 8883 + PubSubClient)
+                        </h4>
+                        <button onclick="copyGeneratedCode()" class="px-3 py-1.5 rounded-lg bg-emqx-600 hover:bg-emqx-500 text-white text-xs font-medium transition flex items-center gap-1.5 shadow">
+                            <i class="fa-regular fa-copy"></i> คัดลอกโค้ด C++
+                        </button>
+                    </div>
+                    
+                    <pre class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-xs font-mono text-emerald-400 overflow-x-auto max-h-[550px] leading-relaxed"><code id="codeOutputBlock">/* โค้ดสร้างอัตโนมัติ */</code></pre>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-cardbg border-t border-cardborder py-4 px-4 text-center text-xs text-slate-500">
+        <p>Smart IoT Control Center &copy; 2026 | พัฒนาสำหรับใช้งานร่วมกับ EMQX Cloud และ ESP32 / ESP32-S3 | พัฒนาโดย นักศึกษาแผนกวิชาเทคโนโลยีธุรกิจดิจิทัล วิทยาลัยการอาชีพสายบุรี</p>
+    </footer>
+
+    <!-- ================= EMQX CONFIG MODAL ================= -->
+    <div id="configModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+        <div class="bg-cardbg border border-cardborder rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between pb-3 border-b border-cardborder">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-emqx-500"></i> ตั้งค่าการเชื่อมต่อ EMQX Cloud
+                </h3>
+                <button onclick="toggleConfigModal(false)" class="text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4">
+                <!-- Mode Switch -->
+                <div class="bg-slate-900 p-3 rounded-xl border border-slate-800">
+                    <label class="block text-xs font-semibold text-slate-300 mb-2">เลือกโหมดการทำงาน:</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button type="button" onclick="selectAppMode('SIM')" id="modeBtnSim" class="py-2 rounded-lg text-xs font-bold border transition">
+                            จำลองการทำงาน (SIM)
+                        </button>
+                        <button type="button" onclick="selectAppMode('LIVE')" id="modeBtnLive" class="py-2 rounded-lg text-xs font-bold border transition">
+                            เชื่อมต่อจริง (EMQX)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Broker Address -->
+                <div>
+                    <label class="block text-xs font-medium text-slate-300 mb-1">EMQX Broker Host / URL:</label>
+                    <input type="text" id="cfgHost" placeholder="xxxxxxxx.ala.asia-southeast1.emqxsl.com" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-emqx-500">
+                    <p class="text-[11px] text-slate-500 mt-1">ใส่เฉพาะชื่อ Host หรือ WSS URL (ระบบจะเติม wss:// และ :8084/mqtt ให้อัตโนมัติ)</p>
+                </div>
+
+                <!-- Port & Topic Prefix Grid -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Port (WSS):</label>
+                        <input type="number" id="cfgPort" value="8084" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-emqx-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Topic Prefix:</label>
+                        <input type="text" id="cfgTopicPrefix" value="smart/room01" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-emqx-500">
+                    </div>
+                </div>
+
+                <!-- Credentials Grid -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Username:</label>
+                        <input type="text" id="cfgUser" placeholder="room_device" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-mono focus:outline-none focus:border-emqx-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-300 mb-1">Password:</label>
+                        <div class="relative">
+                            <input type="password" id="cfgPass" placeholder="••••••••" class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-3 pr-8 py-2 text-xs text-white font-mono focus:outline-none focus:border-emqx-500">
+                            <button type="button" onclick="togglePasswordVisibility()" class="absolute right-2.5 top-2 text-slate-400 hover:text-white">
+                                <i id="eyeIcon" class="fa-regular fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-3 border-t border-cardborder">
+                <button type="button" onclick="toggleConfigModal(false)" class="px-4 py-2 rounded-lg bg-slate-800 text-slate-300 text-xs font-medium hover:bg-slate-700 transition">
+                    ยกเลิก
+                </button>
+                <button type="button" onclick="saveConfigAndConnect()" class="px-4 py-2 rounded-lg bg-emqx-600 hover:bg-emqx-500 text-white text-xs font-bold transition flex items-center gap-1.5 shadow">
+                    <i class="fa-solid fa-check"></i> บันทึก & เชื่อมต่อ
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= JAVASCRIPT LOGIC ================= -->
+    <script>
+        // Global App State
+        let appState = {
+            mode: 'SIM', // 'SIM' or 'LIVE'
+            config: {
+                host: 'xxxxxxxx.ala.asia-southeast1.emqxsl.com',
+                port: 8084,
+                user: 'room_device',
+                pass: 'StrongPassword123',
+                topicPrefix: 'smart/room01'
+            },
+            board: 'ESP32', // 'ESP32' or 'ESP32S3'
+            devices: [
+                { name: 'หลอดไฟดวงที่ 1', type: 'light', channel: 0, state: false },
+                { name: 'หลอดไฟดวงที่ 2', type: 'light', channel: 1, state: false },
+                { name: 'หลอดไฟดวงที่ 3', type: 'light', channel: 2, state: false },
+                { name: 'หลอดไฟดวงที่ 4', type: 'light', channel: 3, state: false },
+                { name: 'พัดลมตัวที่ 1', type: 'fan', channel: 4, state: false },
+                { name: 'พัดลมตัวที่ 2', type: 'fan', channel: 5, state: false },
+                { name: 'พัดลมตัวที่ 3', type: 'fan', channel: 6, state: false }
+            ],
+            sensor: { temp: 28.5, hum: 65.0, lastUpdate: new Date() },
+            autoFan: {
+                enabled: true,
+                threshold: 30.0,
+                targetChannels: [4, 5]
+            },
+            schedules: [],
+            logs: [],
+            soundMuted: false
+        };
+
+        // Pin Mapping Profiles
+        const PIN_PROFILES = {
+            ESP32: {
+                lights: [13, 12, 14, 27],
+                fans: [26, 25, 33],
+                dht: 4
+            },
+            ESP32S3: {
+                lights: [4, 5, 6, 7],
+                fans: [15, 16, 17],
+                dht: 18
+            }
+        };
+
+        // MQTT Client Instance
+        let mqttClient = null;
+        let sensorChart = null;
+        let chartData = { labels: [], temp: [], hum: [] };
+        let simClockSpeed = 1;
+        let simInterval = null;
+
+        // Audio Context for sound FX
+        let audioCtx = null;
+
+        // Initialize App on DOM Load
+        window.addEventListener('DOMContentLoaded', () => {
+            loadLocalStorage();
+            initUI();
+            initChart();
+            renderDevices();
+            renderWiringTable();
+            generateArduinoCode();
+            startSimLoop();
+            
+            // Auto connect if configured as LIVE
+            if (appState.mode === 'LIVE') {
+                connectMQTT();
+            }
+        });
+
+        // Local Storage Persistence
+        function loadLocalStorage() {
+            const savedCfg = localStorage.getItem('emqx_iot_config');
+            if (savedCfg) {
+                try { appState.config = JSON.parse(savedCfg); } catch(e) {}
+            }
+            const savedMode = localStorage.getItem('emqx_iot_mode');
+            if (savedMode) appState.mode = savedMode;
+
+            const savedAuto = localStorage.getItem('emqx_iot_autofan');
+            if (savedAuto) {
+                try { appState.autoFan = JSON.parse(savedAuto); } catch(e) {}
+            }
+
+            const savedSched = localStorage.getItem('emqx_iot_schedules');
+            if (savedSched) {
+                try { appState.schedules = JSON.parse(savedSched); } catch(e) {}
+            }
+        }
+
+        function saveLocalStorage() {
+            localStorage.setItem('emqx_iot_config', JSON.stringify(appState.config));
+            localStorage.setItem('emqx_iot_mode', appState.mode);
+            localStorage.setItem('emqx_iot_autofan', JSON.stringify(appState.autoFan));
+            localStorage.setItem('emqx_iot_schedules', JSON.stringify(appState.schedules));
+        }
+
+        // Web Audio API Sound Effects
+        function playSound(type) {
+            if (appState.soundMuted) return;
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                if (type === 'toggleOn') {
+                    osc.frequency.setValueAtTime(520, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.08);
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.08);
+                } else if (type === 'toggleOff') {
+                    osc.frequency.setValueAtTime(700, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(350, audioCtx.currentTime + 0.08);
+                    gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.08);
+                } else if (type === 'connect') {
+                    osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+                    osc.frequency.setValueAtTime(880, audioCtx.currentTime + 0.1);
+                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.2);
+                }
+            } catch(e) {}
+        }
+
+        function toggleSound() {
+            appState.soundMuted = !appState.soundMuted;
+            const icon = document.getElementById('soundIcon');
+            if (appState.soundMuted) {
+                icon.className = 'fa-solid fa-volume-xmark text-rose-400';
+                showToast('ปิดเสียงเอฟเฟกต์แล้ว', 'info');
+            } else {
+                icon.className = 'fa-solid fa-volume-high text-emerald-400';
+                showToast('เปิดเสียงเอฟเฟกต์แล้ว', 'success');
+                playSound('connect');
+            }
+        }
+
+        // UI Initialization
+        function initUI() {
+            document.getElementById('cfgHost').value = appState.config.host;
+            document.getElementById('cfgPort').value = appState.config.port;
+            document.getElementById('cfgUser').value = appState.config.user;
+            document.getElementById('cfgPass').value = appState.config.pass;
+            document.getElementById('cfgTopicPrefix').value = appState.config.topicPrefix;
+
+            document.getElementById('autoFanMasterToggle').checked = appState.autoFan.enabled;
+            document.getElementById('autoTempSlider').value = appState.autoFan.threshold;
+            updateAutoTempThreshold(appState.autoFan.threshold);
+
+            // Populate checkboxes for target fans
+            const fanChecks = document.querySelectorAll('.auto-fan-check');
+            fanChecks.forEach(chk => {
+                chk.checked = appState.autoFan.targetChannels.includes(parseInt(chk.value));
+            });
+
+            updateModeUI();
+            renderSchedulesTable();
+        }
+
+        function updateModeUI() {
+            const badge = document.getElementById('connectionBadge');
+            const dot = document.getElementById('statusDot');
+            const text = document.getElementById('statusText');
+            const simBox = document.getElementById('simSlidersContainer');
+            const simSpeedBox = document.getElementById('simSpeedBox');
+            const currentModeLabel = document.getElementById('currentModeLabel');
+            const brokerInfoText = document.getElementById('brokerInfoText');
+
+            const formattedHost = formatWssUrl(appState.config.host, appState.config.port);
+
+            if (appState.mode === 'SIM') {
+                dot.className = 'w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse shrink-0';
+                text.className = 'text-amber-400 truncate';
+                text.innerText = 'จำลองการทำงาน (Simulation)';
+                simBox.classList.remove('hidden');
+                simSpeedBox.classList.remove('hidden');
+                currentModeLabel.innerText = 'Simulation Mode';
+                currentModeLabel.className = 'text-amber-400';
+                brokerInfoText.innerText = 'สวิตช์โหมดไปยัง Live EMQX เพื่อเชื่อมต่อจริง';
+            } else {
+                simBox.classList.add('hidden');
+                simSpeedBox.classList.add('hidden');
+                currentModeLabel.innerText = 'Live EMQX Cloud';
+                currentModeLabel.className = 'text-emqx-400';
+                brokerInfoText.innerText = `Target: ${formattedHost} | Prefix: ${appState.config.topicPrefix}`;
+                
+                if (mqttClient && mqttClient.connected) {
+                    dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0';
+                    text.className = 'text-emerald-400 font-bold truncate';
+                    text.innerText = 'เชื่อมต่อ EMQX Cloud สำเร็จ';
+                } else {
+                    dot.className = 'w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping shrink-0';
+                    text.className = 'text-rose-400 truncate';
+                    text.innerText = 'กำลังเชื่อมต่อ EMQX...';
+                }
+            }
+            updateConfigModalButtons();
+        }
+
+        function updateConfigModalButtons() {
+            const btnSim = document.getElementById('modeBtnSim');
+            const btnLive = document.getElementById('modeBtnLive');
+
+            if (appState.mode === 'SIM') {
+                btnSim.className = 'py-2 rounded-lg text-xs font-bold bg-amber-500/20 text-amber-400 border border-amber-500/40 shadow';
+                btnLive.className = 'py-2 rounded-lg text-xs font-bold bg-slate-800 text-slate-400 border border-slate-700 hover:text-white';
+            } else {
+                btnLive.className = 'py-2 rounded-lg text-xs font-bold bg-emqx-600 text-white border border-emqx-500 shadow';
+                btnSim.className = 'py-2 rounded-lg text-xs font-bold bg-slate-800 text-slate-400 border border-slate-700 hover:text-white';
+            }
+        }
+
+        function selectAppMode(mode) {
+            appState.mode = mode;
+            updateConfigModalButtons();
+        }
+
+        function togglePasswordVisibility() {
+            const passInput = document.getElementById('cfgPass');
+            const eyeIcon = document.getElementById('eyeIcon');
+            if (passInput.type === 'password') {
+                passInput.type = 'text';
+                eyeIcon.className = 'fa-regular fa-eye-slash text-emqx-400';
+            } else {
+                passInput.type = 'password';
+                eyeIcon.className = 'fa-regular fa-eye text-slate-400';
+            }
+        }
+
+        function toggleConfigModal(show) {
+            const modal = document.getElementById('configModal');
+            if (show) modal.classList.remove('hidden');
+            else modal.classList.add('hidden');
+        }
+
+        function formatWssUrl(host, port) {
+            let clean = host.trim();
+            if (!clean.startsWith('wss://') && !clean.startsWith('ws://')) {
+                clean = 'wss://' + clean;
+            }
+            if (!clean.includes(':' + port) && !clean.includes('/mqtt')) {
+                // Check if port is in domain
+                if (!clean.match(/:\d+/)) {
+                    clean = clean + ':' + port + '/mqtt';
+                } else {
+                    clean = clean + '/mqtt';
+                }
+            }
+            return clean;
+        }
+
+        function saveConfigAndConnect() {
+            const rawHost = document.getElementById('cfgHost').value.trim();
+            const port = parseInt(document.getElementById('cfgPort').value) || 8084;
+            const user = document.getElementById('cfgUser').value.trim();
+            const pass = document.getElementById('cfgPass').value;
+            const prefix = document.getElementById('cfgTopicPrefix').value.trim();
+
+            if (!rawHost) {
+                showToast('กรุณากรอก EMQX Broker Host', 'error');
+                return;
+            }
+
+            appState.config = { host: rawHost, port, user, pass, topicPrefix: prefix };
+            saveLocalStorage();
+            updateModeUI();
+            toggleConfigModal(false);
+            generateArduinoCode();
+
+            if (appState.mode === 'LIVE') {
+                connectMQTT();
+            } else {
+                if (mqttClient) {
+                    mqttClient.end();
+                    mqttClient = null;
+                }
+                showToast('เปลี่ยนเป็น Simulation Mode เรียบร้อย', 'info');
+            }
+        }
+
+        // ================= MQTT.js CONNECTION =================
+        function connectMQTT() {
+            if (mqttClient) {
+                mqttClient.end(true);
+                mqttClient = null;
+            }
+
+            const wssUrl = formatWssUrl(appState.config.host, appState.config.port);
+            const clientId = 'WebApp_' + Math.random().toString(16).substr(2, 8);
+
+            showToast(`กำลังเชื่อมต่อ EMQX Cloud: ${wssUrl}...`, 'info');
+            updateModeUI();
+
+            const options = {
+                clientId: clientId,
+                username: appState.config.user,
+                password: appState.config.pass,
+                keepalive: 60,
+                clean: true,
+                reconnectPeriod: 5000,
+                connectTimeout: 10000
+            };
+
+            try {
+                mqttClient = mqtt.connect(wssUrl, options);
+
+                mqttClient.on('connect', () => {
+                    showToast('เชื่อมต่อ EMQX Cloud (WSS) สำเร็จ!', 'success');
+                    playSound('connect');
+                    updateModeUI();
+
+                    // Subscribe to status & sensor topics
+                    const statusTopic = `${appState.config.topicPrefix}/status`;
+                    const sensorTopic = `${appState.config.topicPrefix}/sensor`;
+
+                    mqttClient.subscribe([statusTopic, sensorTopic], (err) => {
+                        if (!err) {
+                            addLog('SYSTEM', '-', 'SUBSCRIBE', 'EMQX Sync', `Topics: ${statusTopic}, ${sensorTopic}`);
+                        }
+                    });
+                });
+
+                mqttClient.on('message', (topic, payload) => {
+                    try {
+                        const msgStr = payload.toString();
+                        const json = JSON.parse(msgStr);
+
+                        if (topic.endsWith('/status')) {
+                            // Format: {"lights": [bool, bool, bool, bool], "fans": [bool, bool, bool]}
+                            if (json.lights && Array.isArray(json.lights)) {
+                                json.lights.forEach((st, idx) => {
+                                    if (idx < 4) updateDeviceStateLocal(idx, st, 'EMQX Sync', false);
+                                });
+                            }
+                            if (json.fans && Array.isArray(json.fans)) {
+                                json.fans.forEach((st, idx) => {
+                                    if (idx < 3) updateDeviceStateLocal(idx + 4, st, 'EMQX Sync', false);
+                                });
+                            }
+                        } else if (topic.endsWith('/sensor')) {
+                            // Format: {"temp": 28.5, "hum": 65.0}
+                            if (json.temp !== undefined && json.hum !== undefined) {
+                                updateSensorValues(json.temp, json.hum);
+                            }
+                        }
+                    } catch(e) {
+                        console.error('MQTT JSON Parse Error', e);
+                    }
+                });
+
+                mqttClient.on('error', (err) => {
+                    console.error('MQTT Error:', err);
+                    showToast(`EMQX Connection Error: ${err.message || 'Authentication or SSL Failed'}`, 'error');
+                    updateModeUI();
+                });
+
+                mqttClient.on('close', () => {
+                    updateModeUI();
+                });
+
+            } catch(e) {
+                showToast(`เกิดข้อผิดพลาดในการเชื่อมต่อ: ${e.message}`, 'error');
+            }
+        }
+
+        function publishControl(channel, state, triggerSource = 'Web Manual') {
+            const payload = JSON.stringify({ channel: channel, state: state });
+            
+            if (appState.mode === 'LIVE' && mqttClient && mqttClient.connected) {
+                const topic = `${appState.config.topicPrefix}/control`;
+                mqttClient.publish(topic, payload, { qos: 0 }, (err) => {
+                    if (err) showToast('ไม่สามารถส่งคำสั่งผ่าน MQTT ได้', 'error');
+                });
+            }
+
+            // Local state update & log
+            const dev = appState.devices.find(d => d.channel === channel);
+            addLog(dev ? dev.name : `Ch ${channel}`, channel, state ? 'ON' : 'OFF', triggerSource, payload);
+        }
+
+        // ================= DEVICE CONTROLS =================
+        function renderDevices() {
+            const lightsContainer = document.getElementById('lightsGrid');
+            const fansContainer = document.getElementById('fansGrid');
+            const lightTpl = document.getElementById('lightCardTemplate').content;
+            const fanTpl = document.getElementById('fanCardTemplate').content;
+
+            lightsContainer.innerHTML = '';
+            fansContainer.innerHTML = '';
+
+            const currentPins = PIN_PROFILES[appState.board];
+
+            appState.devices.forEach((dev) => {
+                if (dev.type === 'light') {
+                    const clone = document.importNode(lightTpl, true);
+                    const card = clone.querySelector('.light-card');
+                    card.setAttribute('data-channel', dev.channel);
+
+                    clone.querySelector('.device-name').innerText = dev.name;
+                    clone.querySelector('.channel-desc').innerText = `Channel ${dev.channel}`;
+                    clone.querySelector('.gpio-badge').innerText = `GPIO ${currentPins.lights[dev.channel]}`;
+                    
+                    const toggle = clone.querySelector('.device-toggle');
+                    toggle.checked = dev.state;
+                    toggle.setAttribute('data-channel', dev.channel);
+
+                    lightsContainer.appendChild(clone);
+                } else if (dev.type === 'fan') {
+                    const clone = document.importNode(fanTpl, true);
+                    const card = clone.querySelector('.fan-card');
+                    card.setAttribute('data-channel', dev.channel);
+
+                    clone.querySelector('.device-name').innerText = dev.name;
+                    clone.querySelector('.channel-desc').innerText = `Channel ${dev.channel} (${dev.name})`;
+                    clone.querySelector('.gpio-badge').innerText = `GPIO ${currentPins.fans[dev.channel - 4]}`;
+                    
+                    const toggle = clone.querySelector('.device-toggle');
+                    toggle.checked = dev.state;
+                    toggle.setAttribute('data-channel', dev.channel);
+
+                    // Show auto tag if assigned
+                    if (appState.autoFan.targetChannels.includes(dev.channel)) {
+                        clone.querySelector('.auto-tag').classList.remove('hidden');
+                    }
+
+                    fansContainer.appendChild(clone);
+                }
+            });
+
+            updateDeviceVisuals();
+        }
+
+        function toggleDeviceFromUI(checkbox) {
+            const ch = parseInt(checkbox.getAttribute('data-channel'));
+            const newState = checkbox.checked;
+
+            playSound(newState ? 'toggleOn' : 'toggleOff');
+            updateDeviceStateLocal(ch, newState, 'Web Manual', true);
+        }
+
+        function updateDeviceStateLocal(channel, newState, triggerSource = 'Web Manual', sendMQTT = false) {
+            const dev = appState.devices.find(d => d.channel === channel);
+            if (!dev) return;
+
+            if (dev.state !== newState) {
+                dev.state = newState;
+                if (sendMQTT) {
+                    publishControl(channel, newState, triggerSource);
+                } else {
+                    addLog(dev.name, channel, newState ? 'ON' : 'OFF', triggerSource, JSON.stringify({ channel, state: newState }));
+                }
+            }
+            updateDeviceVisuals();
+        }
+
+        function updateDeviceVisuals() {
+            let activeLights = 0;
+            let activeFans = 0;
+
+            appState.devices.forEach((dev) => {
+                const card = document.querySelector(`[data-channel="${dev.channel}"]`);
+                if (!card) return;
+
+                const toggle = card.querySelector('.device-toggle');
+                if (toggle) toggle.checked = dev.state;
+
+                const iconBox = card.querySelector('.icon-box');
+                const icon = iconBox.querySelector('i');
+                const label = card.querySelector('.status-label');
+
+                if (dev.type === 'light') {
+                    if (dev.state) {
+                        activeLights++;
+                        card.className = card.className.replace('border-cardborder', 'border-yellow-500/50 glow-yellow');
+                        iconBox.className = 'icon-box w-12 h-12 rounded-xl bg-yellow-500 text-slate-950 flex items-center justify-center text-2xl transition-all duration-300';
+                        label.className = 'status-label text-xs font-semibold text-yellow-400';
+                        label.innerText = 'สถานะ: เปิดสว่าง';
+                    } else {
+                        card.className = 'light-card bg-cardbg border border-cardborder rounded-2xl p-4 shadow-xl transition-all duration-300 hover:border-slate-600 relative overflow-hidden';
+                        iconBox.className = 'icon-box w-12 h-12 rounded-xl bg-slate-800 text-slate-500 flex items-center justify-center text-2xl transition-all duration-300';
+                        label.className = 'status-label text-xs font-semibold text-slate-500';
+                        label.innerText = 'สถานะ: ปิด';
+                    }
+                } else if (dev.type === 'fan') {
+                    if (dev.state) {
+                        activeFans++;
+                        card.className = card.className.replace('border-cardborder', 'border-emerald-500/50 glow-emerald');
+                        iconBox.className = 'icon-box w-12 h-12 rounded-xl bg-emerald-500 text-slate-950 flex items-center justify-center text-2xl transition-all duration-300';
+                        icon.className = 'fa-solid fa-fan fan-spin';
+                        label.className = 'status-label text-xs font-semibold text-emerald-400';
+                        label.innerText = 'สถานะ: กำลังหมุน';
+                    } else {
+                        card.className = 'fan-card bg-cardbg border border-cardborder rounded-2xl p-4 shadow-xl transition-all duration-300 hover:border-slate-600 relative overflow-hidden';
+                        iconBox.className = 'icon-box w-12 h-12 rounded-xl bg-slate-800 text-slate-500 flex items-center justify-center text-2xl transition-all duration-300';
+                        icon.className = 'fa-solid fa-fan';
+                        label.className = 'status-label text-xs font-semibold text-slate-500';
+                        label.innerText = 'สถานะ: ปิด';
+                    }
+                }
+            });
+
+            // Update Summary Cards
+            document.getElementById('cardLightsCount').innerText = activeLights;
+            document.getElementById('cardFansCount').innerText = activeFans;
+
+            const lightsSub = document.getElementById('cardLightsSubtext');
+            if (activeLights === 0) lightsSub.innerText = 'ปิดการทำงานทั้งหมด';
+            else if (activeLights === 4) lightsSub.innerText = 'เปิดทำงานครบทั้ง 4 ดวง';
+            else lightsSub.innerText = `เปิดใช้งานอยู่ ${activeLights} ดวง`;
+        }
+
+        function setAllGroup(group, turnOn) {
+            playSound(turnOn ? 'toggleOn' : 'toggleOff');
+            const targetChannels = group === 'lights' ? [0, 1, 2, 3] : [4, 5, 6];
+            targetChannels.forEach(ch => {
+                updateDeviceStateLocal(ch, turnOn, 'Web Manual', true);
+            });
+        }
+
+        // ================= SENSOR & CHART LOGIC =================
+        function onSimSensorChange() {
+            if (appState.mode !== 'SIM') return;
+            const t = parseFloat(document.getElementById('simTempSlider').value);
+            const h = parseFloat(document.getElementById('simHumSlider').value);
+            
+            document.getElementById('simTempVal').innerText = `${t.toFixed(1)}°C`;
+            document.getElementById('simHumVal').innerText = `${h}%`;
+
+            updateSensorValues(t, h);
+        }
+
+        function updateSensorValues(temp, hum) {
+            appState.sensor.temp = temp;
+            appState.sensor.hum = hum;
+            appState.sensor.lastUpdate = new Date();
+
+            document.getElementById('cardTemp').innerText = temp.toFixed(1);
+            document.getElementById('cardHum').innerText = hum.toFixed(0);
+
+            const timeStr = appState.sensor.lastUpdate.toTimeString().split(' ')[0];
+            document.getElementById('tempTime').innerText = timeStr;
+
+            // Push to Chart
+            pushToChart(timeStr, temp, hum);
+
+            // Trigger Auto Fan Check
+            checkAutoFanLogic(temp);
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('sensorChart').getContext('2d');
+            sensorChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [
+                        {
+                            label: 'อุณหภูมิ (°C)',
+                            data: [],
+                            borderColor: '#f59e0b',
+                            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.3,
+                            yAxisID: 'yTemp'
+                        },
+                        {
+                            label: 'ความชื้น (%)',
+                            data: [],
+                            borderColor: '#06b6d4',
+                            backgroundColor: 'rgba(6, 182, 212, 0.05)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.3,
+                            yAxisID: 'yHum'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            grid: { color: '#1f2d42' },
+                            ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 10 } }
+                        },
+                        yTemp: {
+                            type: 'linear',
+                            position: 'left',
+                            min: 10,
+                            max: 50,
+                            grid: { color: '#1f2d42' },
+                            ticks: { color: '#f59e0b', font: { family: 'JetBrains Mono', size: 10 } },
+                            title: { display: true, text: 'อุณหภูมิ (°C)', color: '#f59e0b', font: { size: 11 } }
+                        },
+                        yHum: {
+                            type: 'linear',
+                            position: 'right',
+                            min: 0,
+                            max: 100,
+                            grid: { drawOnChartArea: false },
+                            ticks: { color: '#06b6d4', font: { family: 'JetBrains Mono', size: 10 } },
+                            title: { display: true, text: 'ความชื้น (%)', color: '#06b6d4', font: { size: 11 } }
+                        }
+                    },
+                    plugins: {
+                        legend: { labels: { color: '#cbd5e1', font: { family: 'Prompt', size: 12 } } }
+                    }
+                }
+            });
+
+            // Populate initial mock chart points
+            const now = new Date();
+            for (let i = 10; i >= 0; i--) {
+                const t = new Date(now.getTime() - i * 3000);
+                const timeStr = t.toTimeString().split(' ')[0];
+                pushToChart(timeStr, appState.sensor.temp, appState.sensor.hum);
+            }
+        }
+
+        function pushToChart(timeLabel, temp, hum) {
+            if (!sensorChart) return;
+            sensorChart.data.labels.push(timeLabel);
+            sensorChart.data.datasets[0].data.push(temp);
+            sensorChart.data.datasets[1].data.push(hum);
+
+            if (sensorChart.data.labels.length > 20) {
+                sensorChart.data.labels.shift();
+                sensorChart.data.datasets[0].data.shift();
+                sensorChart.data.datasets[1].data.shift();
+            }
+            sensorChart.update('quiet');
+        }
+
+        // ================= AUTOMATION: AUTO FAN LOGIC =================
+        function toggleAutoFanMaster(enabled) {
+            appState.autoFan.enabled = enabled;
+            saveLocalStorage();
+            document.getElementById('autoFanStatusBadge').innerText = enabled ? 'เปิด' : 'ปิด';
+            document.getElementById('autoFanStatusBadge').className = enabled ? 'font-bold text-emerald-400' : 'font-bold text-slate-500';
+            showToast(enabled ? 'เปิดระบบ Auto Fan เรียบร้อย' : 'ปิดระบบ Auto Fan แล้ว', 'info');
+        }
+
+        function updateAutoTempThreshold(val) {
+            const thresh = parseFloat(val);
+            appState.autoFan.threshold = thresh;
+            document.getElementById('autoTempThresholdDisplay').innerText = `${thresh.toFixed(1)}°C`;
+            document.getElementById('autoTriggerTempText').innerText = thresh.toFixed(1);
+            document.getElementById('autoOffTempText').innerText = (thresh - 1.0).toFixed(1);
+            saveLocalStorage();
+        }
+
+        function saveAutoFanTargets() {
+            const checks = document.querySelectorAll('.auto-fan-check:checked');
+            appState.autoFan.targetChannels = Array.from(checks).map(c => parseInt(c.value));
+            saveLocalStorage();
+            renderDevices();
+        }
+
+        function checkAutoFanLogic(currentTemp) {
+            if (!appState.autoFan.enabled) return;
+
+            const threshold = appState.autoFan.threshold;
+            const offThreshold = threshold - 1.0; // 1.0°C Hysteresis
+
+            appState.autoFan.targetChannels.forEach(ch => {
+                const dev = appState.devices.find(d => d.channel === ch);
+                if (!dev) return;
+
+                if (currentTemp >= threshold && !dev.state) {
+                    // Temperature exceeds threshold -> Turn ON
+                    updateDeviceStateLocal(ch, true, 'Auto Temp', true);
+                    showToast(`Auto Temp: อุณหภูมิสูง ${currentTemp.toFixed(1)}°C -> เปิด ${dev.name}`, 'warning');
+                } else if (currentTemp <= offThreshold && dev.state) {
+                    // Temperature dropped below hysteresis -> Turn OFF
+                    updateDeviceStateLocal(ch, false, 'Auto Temp', true);
+                    showToast(`Auto Temp: อุณหภูมิลดลง ${currentTemp.toFixed(1)}°C -> ปิด ${dev.name}`, 'info');
+                }
+            });
+        }
+
+        // ================= AUTOMATION: TIMER SCHEDULES =================
+        function addScheduleRule(e) {
+            e.preventDefault();
+            const ch = parseInt(document.getElementById('timerDeviceSelect').value);
+            const action = document.getElementById('timerActionSelect').value === 'true';
+            const time = document.getElementById('timerTimeInput').value;
+
+            if (!time) return;
+
+            const rule = {
+                id: Date.now(),
+                channel: ch,
+                action: action,
+                time: time,
+                enabled: true
+            };
+
+            appState.schedules.push(rule);
+            saveLocalStorage();
+            renderSchedulesTable();
+            showToast('เพิ่มกฎการตั้งเวลาสำเร็จ', 'success');
+        }
+
+        function deleteScheduleRule(id) {
+            appState.schedules = appState.schedules.filter(r => r.id !== id);
+            saveLocalStorage();
+            renderSchedulesTable();
+        }
+
+        function renderSchedulesTable() {
+            const tbody = document.getElementById('scheduleRulesTable');
+            tbody.innerHTML = '';
+
+            if (appState.schedules.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-500 font-sans">ยังไม่มีกฎการตั้งเวลาคลิกเพิ่มกฎใหม่ด้านบน</td></tr>`;
+                return;
+            }
+
+            appState.schedules.forEach(rule => {
+                const dev = appState.devices.find(d => d.channel === rule.channel);
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-900/40 transition';
+                tr.innerHTML = `
+                    <td class="p-3 font-mono font-bold text-purple-400">${rule.time} น.</td>
+                    <td class="p-3 font-sans">${dev ? dev.name : 'Channel ' + rule.channel}</td>
+                    <td class="p-3">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${rule.action ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-slate-800 text-slate-400 border border-slate-700'}">
+                            ${rule.action ? 'เปิด (ON)' : 'ปิด (OFF)'}
+                        </span>
+                    </td>
+                    <td class="p-3">
+                        <span class="text-emerald-400 font-sans text-[11px]"><i class="fa-solid fa-circle-check"></i> พร้อมทำงาน</span>
+                    </td>
+                    <td class="p-3 text-right">
+                        <button onclick="deleteScheduleRule(${rule.id})" class="text-slate-500 hover:text-rose-400 p-1">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function setSimClockSpeed(speed) {
+            simClockSpeed = speed;
+            document.querySelectorAll('.sim-speed-btn').forEach(btn => {
+                if (btn.innerText === `${speed}x`) {
+                    btn.className = 'sim-speed-btn px-2 py-0.5 rounded text-xs bg-emqx-600 text-white font-bold';
+                } else {
+                    btn.className = 'sim-speed-btn px-2 py-0.5 rounded text-xs bg-slate-800 text-slate-400 hover:text-white';
+                }
+            });
+        }
+
+        function checkScheduleTimers() {
+            const now = new Date();
+            const hh = String(now.getHours()).padStart(2, '0');
+            const mm = String(now.getMinutes()).padStart(2, '0');
+            const currentTimeStr = `${hh}:${mm}`;
+
+            appState.schedules.forEach(rule => {
+                if (rule.enabled && rule.time === currentTimeStr) {
+                    const dev = appState.devices.find(d => d.channel === rule.channel);
+                    if (dev && dev.state !== rule.action) {
+                        updateDeviceStateLocal(rule.channel, rule.action, 'Schedule Timer', true);
+                        showToast(`ตั้งเวลาทำงาน (${rule.time}): ${dev.name} -> ${rule.action ? 'เปิด' : 'ปิด'}`, 'info');
+                    }
+                }
+            });
+        }
+
+        // ================= SIMULATION LOOP =================
+        function startSimLoop() {
+            if (simInterval) clearInterval(simInterval);
+            
+            simInterval = setInterval(() => {
+                if (appState.mode === 'SIM') {
+                    // Random small temperature drift
+                    const drift = (Math.random() - 0.5) * 0.2;
+                    let newTemp = Math.min(Math.max(appState.sensor.temp + drift, 18), 40);
+                    let newHum = Math.min(Math.max(appState.sensor.hum + (Math.random() - 0.5), 40), 90);
+
+                    document.getElementById('simTempSlider').value = newTemp.toFixed(1);
+                    document.getElementById('simHumSlider').value = newHum.toFixed(0);
+                    onSimSensorChange();
+                }
+
+                // Check Schedule Timers
+                checkScheduleTimers();
+
+            }, 3000);
+        }
+
+        // ================= ACTIVITY LOGS & EXPORT =================
+        function addLog(deviceName, channel, action, source, payload) {
+            const now = new Date();
+            const timestamp = now.toLocaleDateString('th-TH') + ' ' + now.toTimeString().split(' ')[0];
+
+            const entry = {
+                timestamp,
+                deviceName,
+                channel: channel !== '-' ? `Ch ${channel}` : '-',
+                action,
+                source,
+                payload
+            };
+
+            appState.logs.unshift(entry);
+            if (appState.logs.length > 200) appState.logs.pop();
+            renderLogsTable();
+        }
+
+        function renderLogsTable() {
+            const tbody = document.getElementById('activityLogTable');
+            const search = document.getElementById('logSearchInput').value.toLowerCase();
+            const sourceFilter = document.getElementById('logSourceFilter').value;
+
+            tbody.innerHTML = '';
+
+            const filtered = appState.logs.filter(log => {
+                const matchSearch = log.deviceName.toLowerCase().includes(search) || 
+                                    log.channel.toLowerCase().includes(search) || 
+                                    log.source.toLowerCase().includes(search);
+                const matchSource = sourceFilter === 'ALL' || log.source === sourceFilter;
+                return matchSearch && matchSource;
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-500 font-sans">ไม่พบบันทึกกิจกรรม</td></tr>`;
+                return;
+            }
+
+            filtered.forEach(log => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-900/50 transition';
+
+                let actionBadge = log.action === 'ON' 
+                    ? '<span class="text-emerald-400 font-bold">ON</span>'
+                    : (log.action === 'OFF' ? '<span class="text-rose-400 font-bold">OFF</span>' : log.action);
+
+                let sourceClass = 'text-slate-400';
+                if (log.source === 'Web Manual') sourceClass = 'text-yellow-400';
+                else if (log.source === 'EMQX Sync') sourceClass = 'text-emqx-400';
+                else if (log.source === 'Auto Temp') sourceClass = 'text-emerald-400';
+                else if (log.source === 'Schedule Timer') sourceClass = 'text-purple-400';
+
+                tr.innerHTML = `
+                    <td class="p-3 text-slate-400">${log.timestamp}</td>
+                    <td class="p-3 text-white font-sans">${log.deviceName}</td>
+                    <td class="p-3 text-slate-400">${log.channel}</td>
+                    <td class="p-3">${actionBadge}</td>
+                    <td class="p-3 font-sans ${sourceClass}">${log.source}</td>
+                    <td class="p-3 text-slate-500 text-[11px] truncate max-w-[200px]">${log.payload}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function clearLogs() {
+            appState.logs = [];
+            renderLogsTable();
+            showToast('ล้างประวัติการบันทึกแล้ว', 'info');
+        }
+
+        function exportLogsCSV() {
+            if (appState.logs.length === 0) {
+                showToast('ไม่มีข้อมูลสำหรับส่งออก CSV', 'error');
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+            csvContent += "Timestamp,Device Name,Channel,Action,Source,Payload\n";
+
+            appState.logs.forEach(l => {
+                const row = `"${l.timestamp}","${l.deviceName}","${l.channel}","${l.action}","${l.source}","${l.payload.replace(/"/g, '""')}"`;
+                csvContent += row + "\n";
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `IoT_Activity_Logs_${Date.now()}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            showToast('ดาวน์โหลดไฟล์ CSV เรียบร้อยแล้ว', 'success');
+        }
+
+        // ================= CODE & HARDWARE GENERATOR =================
+        function setBoardProfile(board) {
+            appState.board = board;
+            document.getElementById('boardTitleLabel').innerText = board;
+
+            const btnESP32 = document.getElementById('btnBoardESP32');
+            const btnESP32S3 = document.getElementById('btnBoardESP32S3');
+
+            if (board === 'ESP32') {
+                btnESP32.className = 'px-4 py-1.5 rounded-lg text-xs font-bold transition bg-emqx-600 text-white shadow';
+                btnESP32S3.className = 'px-4 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white';
+            } else {
+                btnESP32S3.className = 'px-4 py-1.5 rounded-lg text-xs font-bold transition bg-emqx-600 text-white shadow';
+                btnESP32.className = 'px-4 py-1.5 rounded-lg text-xs font-bold transition text-slate-400 hover:text-white';
+            }
+
+            renderWiringTable();
+            renderDevices();
+            generateArduinoCode();
+        }
+
+        function renderWiringTable() {
+            const tbody = document.getElementById('wiringPinoutTable');
+            const pins = PIN_PROFILES[appState.board];
+
+            tbody.innerHTML = `
+                <tr class="hover:bg-slate-900/40"><td class="p-3 font-semibold text-white">หลอดไฟดวงที่ 1 (Ch 0)</td><td class="p-3 font-mono">Relay IN1</td><td class="p-3 font-mono text-amber-400 font-bold">GPIO ${pins.lights[0]}</td><td class="p-3 text-slate-400">ควบคุมเปิด-ปิดหลอดไฟ 1</td></tr>
+                <tr class="hover:bg-slate-900/40"><td class="p-3 font-semibold text-white">หลอดไฟดวงที่ 2 (Ch 1)</td><td class="p-3 font-mono">Relay IN2</td><td class="p-3 font-mono text-amber-400 font-bold">GPIO ${pins.lights[1]}</td><td class="p-3 text-slate-400">ควบคุมเปิด-ปิดหลอดไฟ 2</td></tr>
+                <tr class="hover:bg-slate-900/40"><td class="p-3 font-semibold text-white">หลอดไฟดวงที่ 3 (Ch 2)</td><td class="p-3 font-mono">Relay IN3</td><td class="p-3 font-mono text-amber-400 font-bold">GPIO ${pins.lights[2]}</td><td class="p-3 text-slate-400">ควบคุมเปิด-ปิดหลอดไฟ 3</td></tr>
+                <tr class="hover:bg-slate-900/40"><td class="p-3 font-semibold text-white">หลอดไฟดวงที่ 4 (Ch 3)</td><td class="p-3 font-mono">Relay IN4</td><td class="p-3 font-mono text-amber-400 font-bold">GPIO ${pins.lights[3]}</td><td class="p-3 text-slate-400">ควบคุมเปิด-ปิดหลอดไฟ 4</td></tr>
+                <tr class="hover:bg-slate-900/40"><td class="p-3 font-semibold text-white">พัดลมตัวที่ 1 (Ch 4)</td><td class="p-3 font-mono">Relay IN5</td><td class="p-3 font-mono text-emerald-400 font-bold">GPIO ${pins.fans[0]}</td><td class="p-3 text-slate-400">ควบคุมพัดลม 1 (รองรับ Auto Temp)</td></tr>
+                <tr class="hover:bg-slate-900/40"><td class="p-3 font-semibold text-white">พัดลมตัวที่ 2 (Ch 5)</td><td class="p-3 font-mono">Relay IN6</td><td class="p-3 font-mono text-emerald-400 font-bold">GPIO ${pins.fans[1]}</td><td class="p-3 text-slate-400">ควบคุมพัดลม 2 (รองรับ Auto Temp)</td></tr>
+                <tr class="hover:bg-slate-900/40"><td class="p-3 font-semibold text-white">พัดลมตัวที่ 3 (Ch 6)</td><td class="p-3 font-mono">Relay IN7</td><td class="p-3 font-mono text-emerald-400 font-bold">GPIO ${pins.fans[2]}</td><td class="p-3 text-slate-400">ควบคุมพัดลม 3 (รองรับ Auto Temp)</td></tr>
+                <tr class="hover:bg-slate-900/40"><td class="p-3 font-semibold text-white">เซนเซอร์ DHT22</td><td class="p-3 font-mono">DATA Pin</td><td class="p-3 font-mono text-cyan-400 font-bold">GPIO ${pins.dht}</td><td class="p-3 text-slate-400">อ่านอุณหภูมิและความชื้นห้อง</td></tr>
+            `;
+        }
+
+        function generateArduinoCode() {
+            const pins = PIN_PROFILES[appState.board];
+            const cfg = appState.config;
+            const hostOnly = cfg.host.replace(/^wss?:\/\//, '').replace(/:\d+.*$/, '').replace(/\/.*$/, '');
+
+            const code = `/*
+ * Smart IoT Control Center - Arduino C++ Firmware
+ * Board Target: ${appState.board}
+ * Target Broker: EMQX Cloud (Port 8883 over TLS/SSL)
+ * Libraries Required: WiFi, WiFiClientSecure, PubSubClient, DHT sensor library, ArduinoJson
+ */
+
+#include <WiFi.h>
+#include <WiFiClientSecure.h>
+#include <PubSubClient.h>
+#include <DHT.h>
+#include <ArduinoJson.h>
+
+// ================= 1. Configuration Credentials =================
+const char* ssid          = "YOUR_WIFI_SSID_2.4GHz";
+const char* password      = "YOUR_WIFI_PASSWORD";
+
+// EMQX Cloud TLS Configuration
+const char* mqtt_server   = "${hostOnly}";
+const int   mqtt_port     = 8883; // Standard Port for MQTT over TLS
+const char* mqtt_user     = "${cfg.user}";
+const char* mqtt_pass     = "${cfg.pass}";
+const char* topic_prefix  = "${cfg.topicPrefix}";
+
+// ================= 2. Hardware Pin Setup (${appState.board}) =================
+// Relay Channels: 0..3 = Lights 1..4, 4..6 = Fans 1..3
+const int relayPins[7] = { ${pins.lights.join(', ')}, ${pins.fans.join(', ')} };
+bool relayState[7]     = { false, false, false, false, false, false, false };
+
+// Active LOW Relay Module (LOW = Turn ON, HIGH = Turn OFF)
+const bool RELAY_ACTIVE_LOW = true;
+
+#define DHTPIN ${pins.dht}
+#define DHTTYPE DHT22
+DHT dht(DHTPIN, DHTTYPE);
+
+// Network Clients
+WiFiClientSecure espClient;
+PubSubClient client(espClient);
+
+unsigned long lastSensorRead = 0;
+
+// Set Relay Pin Logic
+void setRelayState(int index, bool turnOn) {
+  if (index < 0 || index >= 7) return;
+  relayState[index] = turnOn;
+  if (RELAY_ACTIVE_LOW) {
+    digitalWrite(relayPins[index], turnOn ? LOW : HIGH);
+  } else {
+    digitalWrite(relayPins[index], turnOn ? HIGH : LOW);
+  }
+}
+
+// Publish full device status back to Web App
+void publishDeviceStatus() {
+  StaticJsonDocument<256> doc;
+  
+  JsonArray lights = doc.createNestedArray("lights");
+  for (int i = 0; i < 4; i++) lights.add(relayState[i]);
+  
+  JsonArray fans = doc.createNestedArray("fans");
+  for (int i = 4; i < 7; i++) fans.add(relayState[i]);
+
+  char buffer[256];
+  serializeJson(doc, buffer);
+  
+  String statusTopic = String(topic_prefix) + "/status";
+  client.publish(statusTopic.c_str(), buffer, true); // Retained message
+  Serial.print("[MQTT Out] Status Published: ");
+  Serial.println(buffer);
+}
+
+// MQTT Callback when receiving commands from Web App
+void callback(char* topic, byte* payload, unsigned int length) {
+  String message = "";
+  for (unsigned int i = 0; i < length; i++) message += (char)payload[i];
+  
+  Serial.print("[MQTT In] Message on [");
+  Serial.print(topic);
+  Serial.print("]: ");
+  Serial.println(message);
+
+  StaticJsonDocument<256> doc;
+  DeserializationError error = deserializeJson(doc, message);
+  if (error) return;
+
+  // Expecting JSON payload: {"channel": 0..6, "state": true|false}
+  if (doc.containsKey("channel") && doc.containsKey("state")) {
+    int ch = doc["channel"];
+    bool st = doc["state"];
+    
+    setRelayState(ch, st);
+    publishDeviceStatus();
+  }
+}
+
+// Reconnect to EMQX Cloud Broker
+void reconnectMQTT() {
+  while (!client.connected()) {
+    Serial.print("Connecting to EMQX Cloud (");
+    Serial.print(mqtt_server);
+    Serial.print(")...");
+
+    String clientId = "${appState.board}_Client_" + String(random(0xffff), HEX);
+    
+    if (client.connect(clientId.c_str(), mqtt_user, mqtt_pass)) {
+      Serial.println("CONNECTED!");
+      
+      // Subscribe to control commands
+      String controlTopic = String(topic_prefix) + "/control";
+      client.subscribe(controlTopic.c_str());
+      Serial.print("Subscribed to: ");
+      Serial.println(controlTopic);
+
+      // Publish initial state upon connection
+      publishDeviceStatus();
+    } else {
+      Serial.print("FAILED! rc=");
+      Serial.print(client.state());
+      Serial.println(" -> Retrying in 5 seconds...");
+      delay(5000);
+    }
+  }
+}
+
+void setup() {
+  Serial.begin(115200);
+  delay(500);
+  Serial.println("\\n--- Smart IoT Control Center Starting ---");
+
+  // Initialize Relay GPIO Pins
+  for (int i = 0; i < 7; i++) {
+    pinMode(relayPins[i], OUTPUT);
+    setRelayState(i, false); // Initial OFF
+  }
+
+  // Initialize DHT Sensor
+  dht.begin();
+
+  // Connect to Wi-Fi
+  WiFi.begin(ssid, password);
+  Serial.print("Connecting to WiFi: ");
+  Serial.println(ssid);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+  Serial.println("\\nWiFi Connected! IP: " + WiFi.localIP().toString());
+
+  // Configure Secure SSL/TLS Client
+  // Skip CA validation for easy setup on EMQX Cloud Port 8883
+  espClient.setInsecure();
+  
+  client.setServer(mqtt_server, mqtt_port);
+  client.setCallback(callback);
+}
+
+void loop() {
+  if (!client.connected()) {
+    reconnectMQTT();
+  }
+  client.loop();
+
+  // Read DHT22 Sensor every 3 seconds
+  unsigned long now = millis();
+  if (now - lastSensorRead >= 3000) {
+    lastSensorRead = now;
+
+    float temp = dht.readTemperature();
+    float hum = dht.readHumidity();
+
+    if (!isnan(temp) && !isnan(hum)) {
+      StaticJsonDocument<128> doc;
+      doc["temp"] = round(temp * 10.0) / 10.0;
+      doc["hum"]  = round(hum * 10.0) / 10.0;
+
+      char buffer[128];
+      serializeJson(doc, buffer);
+
+      String sensorTopic = String(topic_prefix) + "/sensor";
+      client.publish(sensorTopic.c_str(), buffer);
+      
+      Serial.print("[Sensor Out] ");
+      Serial.println(buffer);
+    } else {
+      Serial.println("[Sensor Error] Failed to read from DHT sensor!");
+    }
+  }
+}`;
+
+            document.getElementById('codeOutputBlock').innerText = code;
+        }
+
+        function copyGeneratedCode() {
+            const codeText = document.getElementById('codeOutputBlock').innerText;
+            const textarea = document.createElement('textarea');
+            textarea.value = codeText;
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand('copy');
+            document.body.removeChild(textarea);
+
+            showToast('คัดลอกโค้ด Arduino C++ เรียบร้อยแล้ว!', 'success');
+        }
+
+        // ================= NAVIGATION TABS & TOASTS =================
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.className = 'tab-btn whitespace-nowrap px-4 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 flex items-center gap-2 transition';
+            });
+
+            document.getElementById(`tab-${tabId}`).className = 'tab-btn whitespace-nowrap px-4 py-2 rounded-lg text-sm font-medium text-white bg-emqx-600 flex items-center gap-2 transition';
+
+            ['dashboard', 'automation', 'logs', 'code'].forEach(id => {
+                const view = document.getElementById(`view-${id}`);
+                if (id === tabId) view.classList.remove('hidden');
+                else view.classList.add('hidden');
+            });
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+
+            let iconClass = 'fa-solid fa-circle-info text-cyan-400';
+            let borderClass = 'border-cyan-500/40 bg-slate-900/90';
+
+            if (type === 'success') {
+                iconClass = 'fa-solid fa-circle-check text-emerald-400';
+                borderClass = 'border-emerald-500/40 bg-slate-900/90';
+            } else if (type === 'warning') {
+                iconClass = 'fa-solid fa-triangle-exclamation text-amber-400';
+                borderClass = 'border-amber-500/40 bg-slate-900/90';
+            } else if (type === 'error') {
+                iconClass = 'fa-solid fa-circle-xmark text-rose-400';
+                borderClass = 'border-rose-500/40 bg-slate-900/90';
+            }
+
+            toast.className = `flex items-center gap-3 px-4 py-3 rounded-xl border ${borderClass} shadow-2xl text-xs text-white backdrop-blur-md transition-all duration-300 transform translate-y-2 pointer-events-auto`;
+            toast.innerHTML = `<i class="${iconClass} text-lg"></i> <span>${message}</span>`;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', '-translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+    </script>
+</body>
+</html>
